@@ -1,0 +1,42 @@
+{
+  "name": "kanji-quiz",
+  "version": "1.0.0",
+  "description": "5歳児向けの、楽しく漢字を覚えられる2択クイズアプリです。",
+  "type": "module",
+  "author": "natsumican63",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/natsumican63/kanji-quiz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/natsumican63/kanji-quiz/issues"
+  },
+  "homepage": "https://github.com/natsumican63/kanji-quiz#readme",
+  "keywords": [
+    "kanji",
+    "quiz",
+    "japanese",
+    "education",
+    "kids",
+    "react",
+    "typescript"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "vite build && gh-pages -d dist"
+  },
+  "dependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "gh-pages": "^6.2.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
