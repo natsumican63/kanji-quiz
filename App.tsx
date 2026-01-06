@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { PREFECTURES, VEHICLES, ANIMALS, FRUITS } from './constants';
 import { QuizQuestion, QuizState, QuizCategory, QuizItem } from './types';
 import QuizCard from './components/QuizCard';
@@ -23,8 +23,15 @@ const App: React.FC = () => {
   const [trivia, setTrivia] = useState<string>('');
   const [showModal, setShowModal] = useState(false);
   const [category, setCategory] = useState<QuizCategory | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   const nextQuestion = useCallback((isLast: boolean) => {
+    // タイムアウトをクリア
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
     setShowModal(false);
     if (!isLast) {
       setCurrentIndex(prev => prev + 1);
@@ -97,10 +104,14 @@ const App: React.FC = () => {
       setTrivia(randomFeedback);
 
       // 自動で次の問題へ
-      setTimeout(() => {
+      timeoutRef.current = window.setTimeout(() => {
         nextQuestion(currentIndex + 1 >= QUESTIONS_COUNT);
       }, 3500);
     }
+  };
+
+  const handleModalClick = () => {
+    nextQuestion(currentIndex + 1 >= QUESTIONS_COUNT);
   };
 
   const handleManualSpeak = (text: string) => {
@@ -116,13 +127,13 @@ const App: React.FC = () => {
           <div className="relative inline-block px-4">
             <span className="absolute -top-12 -right-6 text-7xl transform rotate-12 hidden sm:block">✨</span>
             <span className="absolute -bottom-12 -left-6 text-7xl transform -rotate-12 hidden sm:block">⭐</span>
-            <h1 className="text-5xl md:text-8xl font-black text-orange-500 drop-shadow-lg leading-tight">
+            <h1 className="text-4xl md:text-8xl font-black text-orange-500 drop-shadow-lg leading-tight">
               かんじクイズに<br/>
               <span className="text-sky-500">ちょうせん！</span>
             </h1>
           </div>
           
-          <p className="text-3xl md:text-4xl font-black text-slate-500 px-4">
+          <p className="text-2xl md:text-4xl font-black text-slate-500 px-4">
             どの クイズを するかな？
           </p>
 
@@ -132,7 +143,7 @@ const App: React.FC = () => {
               className="group relative bg-orange-400 hover:bg-orange-500 text-white p-8 rounded-[3rem] shadow-[0_12px_0_0_#c2410c] active:shadow-none active:translate-y-2 transition-all flex flex-col items-center space-y-4"
             >
               <span className="text-7xl md:text-8xl group-hover:scale-110 transition-transform">🗾</span>
-              <span className="text-3xl md:text-4xl font-black">とどうふけん</span>
+              <span className="text-2xl md:text-4xl font-black">とどうふけん</span>
             </button>
 
             <button
@@ -140,7 +151,7 @@ const App: React.FC = () => {
               className="group relative bg-sky-400 hover:bg-sky-500 text-white p-8 rounded-[3rem] shadow-[0_12px_0_0_#0369a1] active:shadow-none active:translate-y-2 transition-all flex flex-col items-center space-y-4"
             >
               <span className="text-7xl md:text-8xl group-hover:scale-110 transition-transform">🚑</span>
-              <span className="text-3xl md:text-4xl font-black">のりもの</span>
+              <span className="text-2xl md:text-4xl font-black">のりもの</span>
             </button>
 
             <button
@@ -148,7 +159,7 @@ const App: React.FC = () => {
               className="group relative bg-green-500 hover:bg-green-600 text-white p-8 rounded-[3rem] shadow-[0_12px_0_0_#15803d] active:shadow-none active:translate-y-2 transition-all flex flex-col items-center space-y-4"
             >
               <span className="text-7xl md:text-8xl group-hover:scale-110 transition-transform">🦁</span>
-              <span className="text-3xl md:text-4xl font-black">どうぶつ</span>
+              <span className="text-2xl md:text-4xl font-black">どうぶつ</span>
             </button>
 
             <button
@@ -156,7 +167,7 @@ const App: React.FC = () => {
               className="group relative bg-pink-400 hover:bg-pink-500 text-white p-8 rounded-[3rem] shadow-[0_12px_0_0_#be185d] active:shadow-none active:translate-y-2 transition-all flex flex-col items-center space-y-4"
             >
               <span className="text-7xl md:text-8xl group-hover:scale-110 transition-transform">🍎</span>
-              <span className="text-3xl md:text-4xl font-black">くだもの</span>
+              <span className="text-2xl md:text-4xl font-black">くだもの</span>
             </button>
           </div>
         </div>
@@ -164,8 +175,8 @@ const App: React.FC = () => {
 
       {gameState === 'QUIZ' && (
         <div className="w-full flex flex-col items-center space-y-6 max-w-3xl">
-          <QuizCard 
-            question={questions[currentIndex]} 
+          <QuizCard
+            question={questions[currentIndex]}
             onAnswer={handleAnswer}
             onSpeak={handleManualSpeak}
             disabled={!!selectedAnswer}
@@ -173,20 +184,30 @@ const App: React.FC = () => {
             correctAnswer={questions[currentIndex].correct}
           />
 
+          <button
+            onClick={() => setGameState('START')}
+            className="text-slate-400 text-lg md:text-xl font-black hover:text-slate-600 transition-colors px-6 py-3 rounded-2xl hover:bg-white/50"
+          >
+            ← トップに もどる
+          </button>
+
           {/* Modal Overlay */}
           {showModal && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300">
+            <div
+              onClick={handleModalClick}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 cursor-pointer"
+            >
               <div className="bg-white w-full max-w-2xl rounded-[4rem] shadow-2xl border-[12px] border-orange-300 p-8 md:p-12 text-center animate-pop relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-6 bg-orange-100"></div>
                 
-                <p className="text-4xl md:text-5xl font-black text-orange-500 mb-10 mt-4 animate-bounce">
+                <p className="text-3xl md:text-5xl font-black text-orange-500 mb-10 mt-4 animate-bounce">
                   ✨ {trivia} ✨
                 </p>
 
                 <div className="bg-orange-50 py-12 px-4 rounded-[3rem] border-4 border-orange-100 mb-10 overflow-x-auto">
                   <div className="flex justify-center items-end whitespace-nowrap min-w-max mx-auto px-4">
                     {questions[currentIndex].segments.map((segment, idx) => (
-                      <ruby key={idx} className="text-7xl md:text-9xl font-black text-slate-800 mx-1">
+                      <ruby key={idx} className="text-6xl md:text-9xl font-black text-slate-800 mx-1">
                         {segment.k}
                         <rt className="font-black">{segment.h}</rt>
                       </ruby>
@@ -196,7 +217,7 @@ const App: React.FC = () => {
 
                 <div className="flex justify-center items-center gap-6">
                    <div className="text-6xl animate-spin-slow">🎊</div>
-                   <div className="text-3xl md:text-4xl font-black text-slate-500">
+                   <div className="text-2xl md:text-4xl font-black text-slate-500">
                       つぎへ いくよ！
                    </div>
                    <div className="text-6xl animate-spin-slow">🎊</div>
@@ -215,10 +236,10 @@ const App: React.FC = () => {
           </div>
           
           <div className="bg-white p-12 rounded-[4rem] shadow-2xl border-[12px] border-yellow-300 w-full">
-            <p className="text-5xl md:text-6xl font-black text-orange-500 mb-6">
+            <p className="text-4xl md:text-6xl font-black text-orange-500 mb-6">
               ぜんぶ できたね！
             </p>
-            <p className="text-3xl md:text-4xl font-bold text-slate-500 leading-relaxed">
+            <p className="text-2xl md:text-4xl font-bold text-slate-500 leading-relaxed">
               よく がんばりました！<br/>かんじマスターだね！
             </p>
           </div>
@@ -226,7 +247,7 @@ const App: React.FC = () => {
           <div className="flex flex-col space-y-6 px-6">
             <button
               onClick={() => category && generateQuiz(category)}
-              className="bg-sky-500 hover:bg-sky-600 text-white text-4xl font-black py-8 px-12 rounded-[2rem] shadow-[0_10px_0_0_#0369a1] active:shadow-none active:translate-y-2 transition-all"
+              className="bg-sky-500 hover:bg-sky-600 text-white text-3xl md:text-4xl font-black py-8 px-12 rounded-[2rem] shadow-[0_10px_0_0_#0369a1] active:shadow-none active:translate-y-2 transition-all"
             >
               もういっかい！
             </button>
